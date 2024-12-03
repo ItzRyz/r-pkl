@@ -128,13 +128,14 @@ export default function Edit({ params }: { params: { id: number } }) {
                   />
                 )}
                 <div className="flex flex-row justify-between w-full gap-4">
+                  <Input name="id" id="id" type="hidden" value={params.id} />
                   <div className="flex flex-col w-full space-y-1.5">
                     <Label htmlFor="username">Username</Label>
                     <Input
                       id="username"
                       name="username"
                       type="text"
-                      value={oldData?.username}
+                      defaultValue={oldData?.username}
                       placeholder="Your username here."
                     />
                   </div>
@@ -164,7 +165,7 @@ export default function Edit({ params }: { params: { id: number } }) {
                       id="name"
                       name="name"
                       type="text"
-                      value={oldData?.name as string}
+                      defaultValue={oldData?.name as string}
                       placeholder="Your name here."
                     />
                   </div>
@@ -174,7 +175,7 @@ export default function Edit({ params }: { params: { id: number } }) {
                       id="email"
                       name="email"
                       type="email"
-                      value={oldData?.email}
+                      defaultValue={oldData?.email}
                       placeholder="Your email here."
                     />
                   </div>

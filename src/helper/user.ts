@@ -1,6 +1,6 @@
 "use server";
 
-import { addUserSchema } from "@/lib/zod/user";
+import { addUserSchema, editUserSchema } from "@/lib/zod/user";
 import { redirect, RedirectType } from "next/navigation";
 import { z } from "zod";
 
@@ -52,7 +52,7 @@ const editUser = async (
   prevState: unknown,
   formData: FormData
 ): Promise<userResponse> => {
-  const validatedFields = addUserSchema.safeParse(
+  const validatedFields = editUserSchema.safeParse(
     Object.fromEntries(formData.entries())
   );
 
@@ -62,7 +62,7 @@ const editUser = async (
     };
   }
 
-  const { username, email, name, groupid, password } = validatedFields.data;
+  const { id, username, email, name, groupid, password } = validatedFields.data;
 
   try {
     const request = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user`, {
@@ -71,6 +71,7 @@ const editUser = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        id,
         username,
         email,
         name,
@@ -80,7 +81,7 @@ const editUser = async (
     });
 
     const response = await request.json();
-    return { message: response.message, status: request.status };
+    return { message: response.error, status: request.status };
   } catch (error: any) {
     return { message: error.message };
   }

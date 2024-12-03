@@ -1,4 +1,4 @@
-import { object, string } from "zod";
+import { number, object, string } from "zod";
 
 const addUserSchema = object({
   username: string()
@@ -19,6 +19,7 @@ const addUserSchema = object({
 });
 
 const editUserSchema = object({
+  id: string().min(1, "Id is required"),
   username: string()
     .min(1, "Username is required")
     .min(4, "Username must be more than 4 characters")

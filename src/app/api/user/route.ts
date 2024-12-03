@@ -120,8 +120,8 @@ async function PUT(req: NextRequest) {
     });
 
     if (usernameValidation.length > 0) {
-      const validateId = usernameValidation.map((a) => a.id != id);
-      if (validateId) {
+      const validateId = usernameValidation.map((a) => a.id == id);
+      if (!validateId) {
         return NextResponse.json(
           {
             message: "Failed to update user, username already used",
@@ -139,8 +139,8 @@ async function PUT(req: NextRequest) {
     });
 
     if (emailValidation.length > 0) {
-      const validateId = emailValidation.map((a) => a.id != id);
-      if (validateId) {
+      const validateId = emailValidation.map((a) => a.id == id);
+      if (!validateId) {
         return NextResponse.json(
           {
             message: "Failed to update user, email already used",
@@ -159,11 +159,11 @@ async function PUT(req: NextRequest) {
         password: encrypt(password as string),
       },
       where: {
-        id,
+        id: Number.parseInt(id as unknown as string),
       },
     });
 
-    NextResponse.json(
+    return NextResponse.json(
       {
         message: "Success update user",
         data: updateUser,
@@ -171,7 +171,7 @@ async function PUT(req: NextRequest) {
       { status: 200 }
     );
   } catch (e: any) {
-    NextResponse.json(
+    return NextResponse.json(
       {
         message: "Internal Server Error!",
         error: e.message,
@@ -191,14 +191,14 @@ async function DELETE(req: NextRequest) {
       },
     });
 
-    NextResponse.json(
+    return NextResponse.json(
       {
         message: "Success delete user",
       },
       { status: 200 }
     );
   } catch (e: any) {
-    NextResponse.json(
+    return NextResponse.json(
       {
         message: "Internal Server Error!",
         error: e.message,
