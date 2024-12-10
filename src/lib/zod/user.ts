@@ -1,4 +1,4 @@
-import { number, object, string } from "zod";
+import { object, string } from "zod";
 
 const addUserSchema = object({
   username: string()

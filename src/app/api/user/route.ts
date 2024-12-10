@@ -79,7 +79,11 @@ async function POST(req: NextRequest) {
 
 async function GET() {
   try {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+      include: {
+        group: true,
+      },
+    });
 
     if (users.length < 1) {
       return NextResponse.json(

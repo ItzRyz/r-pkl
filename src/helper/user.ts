@@ -36,7 +36,7 @@ const addUser = async (
         username,
         email,
         name,
-        groupid: null,
+        groupid: Number.parseInt(groupid),
         password,
       }),
     });
@@ -81,7 +81,7 @@ const editUser = async (
     });
 
     const response = await request.json();
-    return { message: response.error, status: request.status };
+    return { message: response.message, status: request.status };
   } catch (error: any) {
     return { message: error.message };
   }

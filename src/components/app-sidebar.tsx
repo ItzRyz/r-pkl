@@ -17,38 +17,38 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { User2, ChevronUp } from "lucide-react";
-import { redirect, usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
-import { useEffect } from "react";
-import { revalidatePath } from "next/cache";
+import { User2, ChevronUp, ChevronRight } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { useState } from "react";
 
 export function AppSidebar({ session }: { session: any }) {
   const path = usePathname();
+  const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
 
   // Menu items.
   const items = [
     {
       title: "Home",
-      url: "#",
+      url: "/",
     },
     {
-      title: "Inbox",
-      url: "#",
+      title: "Master",
+      items: [
+        { title: "User", url: "/master/user" },
+        { title: "Group", url: "/master/group" },
+        { title: "Menu", url: "/master/menu" },
+      ],
     },
     {
-      title: "Calendar",
-      url: "#",
-    },
-    {
-      title: "Search",
-      url: "#",
-    },
-    {
-      title: "Settings",
-      url: "#",
+      title: "Record Monitoring",
+      url: "/recording",
     },
   ];
+
+  const toggleSubMenu = (title: string) => {
+    setOpenSubMenu(openSubMenu === title ? null : title);
+  };
 
   return path.includes("/login") ? (
     <></>
@@ -60,19 +60,44 @@ export function AppSidebar({ session }: { session: any }) {
         </div>
       </SidebarHeader>
       <hr />
-      <SidebarContent>
+      <SidebarContent className="overflow-x-hidden">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
+              {items.map((item) =>
+                item.items ? (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      onClick={() => toggleSubMenu(item.title)}
+                      className="flex justify-between"
+                    >
                       <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                      <ChevronRight
+                        className={`transition-transform ${
+                          openSubMenu === item.title ? "rotate-90" : ""
+                        }`}
+                      />
+                    </SidebarMenuButton>
+                    {openSubMenu === item.title && (
+                      <SidebarMenu className="ml-4 border-l pl-2">
+                        {item.items.map((subItem) => (
+                          <SidebarMenuItem key={subItem.title}>
+                            <SidebarMenuButton asChild>
+                              <a href={subItem.url}>{subItem.title}</a>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenu>
+                    )}
+                  </SidebarMenuItem>
+                ) : (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <a href={item.url}>{item.title}</a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 import { ZodIssue, ZodIssueCode } from "zod";
 
@@ -9,12 +9,13 @@ import { addUser } from "@/helper/user";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ComboBox } from "@/components/ui/combo-box";
+import { ComboBox, ComboType } from "@/components/ui/combo-box";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { AlertCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Group } from "@prisma/client";
 
 const ErrorMessages = ({
   errors,
@@ -49,36 +50,31 @@ const SuccessMessage = ({ message }: { message: string | undefined }) => {
 
 export default function Add() {
   const [state, formAction] = useFormState(addUser, { error: [] });
+  const [selectGroup, setSelectGroup] = useState<ComboType[]>([]);
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   if (state.status == 200) {
-    router.push("/master/user");
+    router.push(pathname.replace(/\/add$/, ""));
   }
 
-  const frameworks = [
-    {
-      value: "next.js",
-      label: "Next.js",
-    },
-    {
-      value: "sveltekit",
-      label: "SvelteKit",
-    },
-    {
-      value: "nuxt.js",
-      label: "Nuxt.js",
-    },
-    {
-      value: "remix",
-      label: "Remix",
-    },
-    {
-      value: "astro",
-      label: "Astro",
-    },
-  ];
+  useEffect(() => {
+    const getSelectGroup = async () => {
+      const req = await fetch("/api/group");
+      const res = await req.json();
+      var temp: Array<ComboType> = [];
+      res.data.map((a: Group) => {
+        temp.push({
+          value: a.id.toString(),
+          label: a.groupnm as string,
+        });
+      });
+      setSelectGroup(temp);
+    };
+    getSelectGroup();
+  }, [open]);
 
   return (
     <>
@@ -88,7 +84,7 @@ export default function Add() {
             <p className="font-semibold">Add Users</p>
             <div className="flex flex-row gap-2">
               <Button variant={"outline"} className="text-red-600">
-                <a href={"/master/user"}>Back</a>
+                <a href={pathname.replace(/\/add$/, "")}>Back</a>
               </Button>
               <Button
                 type="submit"
@@ -129,7 +125,7 @@ export default function Add() {
                   <div className="flex flex-col w-full space-y-1.5">
                     <Label htmlFor="group">Group</Label>
                     <ComboBox
-                      data={frameworks}
+                      data={selectGroup}
                       placeholder="Select group"
                       searchText="Search group"
                       value={value}

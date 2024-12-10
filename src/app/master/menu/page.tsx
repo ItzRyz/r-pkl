@@ -67,14 +67,14 @@ export default function Home() {
       },
     },
     {
-      accessorKey: "transcode",
+      accessorKey: "menunm",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Monitoring Code
+            Name
             {!column.getIsSorted() ? (
               <ArrowUpDown className="ml-2 h-4 w-4" />
             ) : column.getIsSorted() === "asc" ? (
@@ -87,7 +87,7 @@ export default function Home() {
       },
     },
     {
-      accessorKey: "transdate",
+      accessorKey: "link",
       size: 10,
       header: ({ column }) => {
         return (
@@ -95,7 +95,7 @@ export default function Home() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Monitoring Date
+            Link
             {!column.getIsSorted() ? (
               <ArrowUpDown className="ml-2 h-4 w-4" />
             ) : column.getIsSorted() === "asc" ? (
@@ -108,7 +108,7 @@ export default function Home() {
       },
     },
     {
-      accessorKey: "company.name",
+      accessorKey: "seq",
       size: 2,
       header: ({ column }) => {
         return (
@@ -116,49 +116,7 @@ export default function Home() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Company
-            {!column.getIsSorted() ? (
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === "asc" ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            )}
-          </Button>
-        );
-      },
-    },
-    {
-      accessorKey: "department.name",
-      size: 2,
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Department
-            {!column.getIsSorted() ? (
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === "asc" ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            )}
-          </Button>
-        );
-      },
-    },
-    {
-      accessorKey: "pic",
-      size: 2,
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Staff Prakerin
+            Seq
             {!column.getIsSorted() ? (
               <ArrowUpDown className="ml-2 h-4 w-4" />
             ) : column.getIsSorted() === "asc" ? (
@@ -216,7 +174,7 @@ export default function Home() {
       <div className="flex flex-col px-16 py-12 w-full h-full min-h-screen gap-4">
         <Card className="rounded-md">
           <CardHeader className="flex-row space-y-0 p-3 justify-between items-center">
-            <p className="font-semibold">Record Monitoring</p>
+            <p className="font-semibold">Menu</p>
             <div className="flex flex-row gap-2">
               <Button variant={"outline"} className="text-orange-500">
                 Export

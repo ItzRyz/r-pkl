@@ -6,18 +6,16 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowUp, ArrowUpDown, Trash2, UserPen } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { redirect, RedirectType, usePathname } from "next/navigation";
+import { User, Group } from "@prisma/client";
 
-type User = {
-  id: string;
+type UserTable = User & {
   no: number;
-  username: string;
-  name: string;
-  email: string;
+  group: Group;
 };
 
 export default function Home() {
   const pathname = usePathname();
-  const [data, setData] = useState<User[]>([]);
+  const [data, setData] = useState<UserTable[]>([]);
 
   useEffect(() => {
     fetch("/api/user", {
@@ -29,7 +27,7 @@ export default function Home() {
       });
   }, []);
 
-  const deleteUser = (id: string) => {
+  const deleteUser = (id: number) => {
     fetch(`/api/user`, {
       method: "DELETE",
       headers: {
@@ -55,7 +53,7 @@ export default function Home() {
       });
   };
 
-  const columns: ColumnDef<User>[] = [
+  const columns: ColumnDef<UserTable>[] = [
     {
       id: "no",
       accessorKey: "no",
@@ -85,6 +83,37 @@ export default function Home() {
           </Button>
         );
       },
+      cell: ({ row }) => {
+        return <div className="ms-4">{row.original.username}</div>;
+      },
+    },
+    {
+      accessorKey: "group.groupnm",
+      size: 10,
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Group
+            {!column.getIsSorted() ? (
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            )}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <div className="ms-4">
+            {row.original.groupid ? row.original.group.groupnm : ""}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "name",
@@ -105,6 +134,9 @@ export default function Home() {
             )}
           </Button>
         );
+      },
+      cell: ({ row }) => {
+        return <div className="ms-4">{row.original.name}</div>;
       },
     },
     {
@@ -127,6 +159,9 @@ export default function Home() {
           </Button>
         );
       },
+      cell: ({ row }) => {
+        return <div className="ms-4">{row.original.email}</div>;
+      },
     },
     {
       id: "actions",
@@ -137,11 +172,11 @@ export default function Home() {
 
         return (
           <div className="flex flex-row justify-center gap-2">
-            <Button variant={"outline"} className="text-orange-500">
-              <a href={"/master/user/" + user.id}>
+            <a href={"/master/user/" + user.id}>
+              <Button variant={"outline"} className="text-orange-500">
                 <UserPen />
-              </a>
-            </Button>
+              </Button>
+            </a>
             <Button
               variant={"outline"}
               className="text-red-600"

@@ -1,42 +1,26 @@
-import { Group } from "@prisma/client";
+import { Menu } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 async function POST(req: NextRequest) {
   try {
-    const { groupnm }: Group = await req.json();
+    const { menunm, icon, seq, masterid, isactive }: Menu = await req.json();
 
-    const validation = await prisma.group.findMany({
-      where: {
-        groupnm: {
-          equals: groupnm,
-          mode: "insensitive",
-        },
-      },
-    });
-
-    if (validation.length > 0) {
-      return NextResponse.json(
-        {
-          message: "Failed to create group, group name already used",
-          data: [],
-        },
-        { status: 400 }
-      );
-    }
-
-    const newGroup = await prisma.group.create({
+    const newMenu = await prisma.menu.create({
       data: {
-        groupnm: groupnm,
-        isactive: true,
+        menunm: menunm,
+        icon: icon,
+        seq: seq,
+        masterid: masterid,
+        isactive: isactive,
       },
     });
 
-    if (!newGroup.id) {
+    if (!newMenu.id) {
       return NextResponse.json(
         {
-          message: "Failed to create group",
-          data: newGroup,
+          message: "Failed to create menu",
+          data: newMenu,
         },
         { status: 400 }
       );
@@ -44,8 +28,8 @@ async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: "Succcess create new group",
-        data: newGroup,
+        message: "Succcess create new menu",
+        data: newMenu,
       },
       { status: 200 }
     );
@@ -62,13 +46,13 @@ async function POST(req: NextRequest) {
 
 async function GET() {
   try {
-    const groups = await prisma.group.findMany();
+    const menus = await prisma.menu.findMany();
 
-    if (groups.length < 1) {
+    if (menus.length < 1) {
       return NextResponse.json(
         {
-          message: "No groups found!",
-          data: groups,
+          message: "No menus found!",
+          data: menus,
         },
         { status: 400 }
       );
@@ -76,8 +60,8 @@ async function GET() {
 
     return NextResponse.json(
       {
-        message: "groups found!",
-        data: groups,
+        message: "Menus found!",
+        data: menus,
       },
       { status: 200 }
     );
@@ -94,33 +78,16 @@ async function GET() {
 
 async function PUT(req: NextRequest) {
   try {
-    const { id, groupnm }: Group = await req.json();
+    const { id, menunm, icon, seq, masterid, isactive }: Menu =
+      await req.json();
 
-    const existingGroup = await prisma.group.findFirst({
-      where: {
-        groupnm: {
-          equals: groupnm,
-          mode: "insensitive",
-        },
-        id: {
-          not: Number.parseInt(id as unknown as string),
-        },
-      },
-    });
-
-    if (existingGroup) {
-      return NextResponse.json(
-        {
-          message: "Failed to update group, group name already used",
-          data: [],
-        },
-        { status: 400 }
-      );
-    }
-
-    const updateGroup = await prisma.group.update({
+    const updateMenu = await prisma.menu.update({
       data: {
-        groupnm: groupnm,
+        menunm: menunm,
+        icon: icon,
+        seq: seq,
+        masterid: masterid,
+        isactive: isactive,
       },
       where: {
         id: Number.parseInt(id as unknown as string),
@@ -130,7 +97,7 @@ async function PUT(req: NextRequest) {
     return NextResponse.json(
       {
         message: "Success update group",
-        data: updateGroup,
+        data: updateMenu,
       },
       { status: 200 }
     );
@@ -147,9 +114,9 @@ async function PUT(req: NextRequest) {
 
 async function DELETE(req: NextRequest) {
   try {
-    const { id }: Group = await req.json();
+    const { id }: Menu = await req.json();
 
-    await prisma.group.delete({
+    await prisma.menu.delete({
       where: {
         id: id,
       },
