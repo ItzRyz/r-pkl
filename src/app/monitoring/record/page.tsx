@@ -5,8 +5,8 @@ import { DataTable } from "./data-table";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowUp, ArrowUpDown, Trash2, UserPen } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
-import { redirect, RedirectType, usePathname } from "next/navigation";
-import { Checkbox } from "@/components/ui/checkbox";
+import { usePathname } from "next/navigation";
+import { Recording } from "@prisma/client";
 
 type Menu = {
   id: string;
@@ -23,7 +23,7 @@ export default function Home() {
   const [data, setData] = useState<Menu[]>([]);
 
   useEffect(() => {
-    fetch("/api/menu", {
+    fetch("/api/monitoring", {
       method: "GET",
     })
       .then((req) => req.json())
@@ -32,8 +32,8 @@ export default function Home() {
       });
   }, []);
 
-  const deleteMenu = (id: string) => {
-    fetch(`/api/menu`, {
+  const deleteData = (id: string) => {
+    fetch(`/api/monitoring`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -56,7 +56,7 @@ export default function Home() {
       });
   };
 
-  const columns: ColumnDef<Menu>[] = [
+  const columns: ColumnDef<Recording>[] = [
     {
       id: "no",
       accessorKey: "no",
@@ -171,29 +171,15 @@ export default function Home() {
       },
     },
     {
-      id: "active",
-      size: 2,
-      header: (<div className="text-center">Active</div>) as unknown as string,
-      cell: ({ row }) => {
-        const menu = row.original;
-
-        return (
-          <div className="flex flex-row justify-center">
-            <Checkbox checked={menu.isactive} />
-          </div>
-        );
-      },
-    },
-    {
       id: "actions",
       size: 10,
       header: (<div className="text-center">Actions</div>) as unknown as string,
       cell: ({ row }) => {
-        const menu = row.original;
+        const data = row.original;
 
         return (
           <div className="flex flex-row justify-center gap-2">
-            <a href={`/master/menu/${menu.id}`}>
+            <a href={pathname + `/${data.id}`}>
               <Button variant={"outline"} className="text-orange-500">
                 <UserPen />
               </Button>
@@ -201,13 +187,44 @@ export default function Home() {
             <Button
               variant={"outline"}
               className="text-red-600"
-              onClick={() => deleteMenu(menu.id)}
+              onClick={() => deleteData(data.id as unknown as string)}
             >
               <Trash2 />
             </Button>
           </div>
         );
       },
+    },
+  ];
+
+  const recordMonitoringData = [
+    {
+      id: 1,
+      transcode: "MRC001",
+      transdate: "2024-12-5",
+      company: {
+        id: 1,
+        name: "PT. Hyperdata Solusindo Mandiri",
+      },
+      department: {
+        id: 1,
+        name: "TIK",
+      },
+      pic: "Ervin Kurniawan"
+    },
+    {
+      id: 2,
+      transcode: "MRC002",
+      transdate: "2023-12-5",
+      company: {
+        id: 2,
+        name: "PT. Autochem Industry",
+      },
+      department: {
+        id: 2,
+        name: "LISTRIK",
+      },
+      pic: "Joko"
     },
   ];
 
@@ -227,7 +244,7 @@ export default function Home() {
             </div>
           </CardHeader>
         </Card>
-        <DataTable columns={columns} data={data} />
+        <DataTable columns={columns} data={recordMonitoringData} />
       </div>
     </>
   );

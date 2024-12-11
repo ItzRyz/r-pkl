@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Dispatch, SetStateAction, useState, forwardRef } from "react";
+import { Dispatch, SetStateAction } from "react";
 
 export type ComboType = {
   value: string;

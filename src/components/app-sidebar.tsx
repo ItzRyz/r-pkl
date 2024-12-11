@@ -41,8 +41,11 @@ export function AppSidebar({ session }: { session: any }) {
       ],
     },
     {
-      title: "Record Monitoring",
-      url: "/recording",
+      title: "Monitoring",
+      items: [
+        { title: "Record", url: "/monitoring/record" },
+        { title: "Report", url: "/monitoring/report" },
+      ],
     },
   ];
 
@@ -73,9 +76,8 @@ export function AppSidebar({ session }: { session: any }) {
                     >
                       <span>{item.title}</span>
                       <ChevronRight
-                        className={`transition-transform ${
-                          openSubMenu === item.title ? "rotate-90" : ""
-                        }`}
+                        className={`transition-transform ${openSubMenu === item.title ? "rotate-90" : ""
+                          }`}
                       />
                     </SidebarMenuButton>
                     {openSubMenu === item.title && (
