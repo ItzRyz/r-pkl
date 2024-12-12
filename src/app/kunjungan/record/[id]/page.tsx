@@ -9,12 +9,12 @@ import { editGroup } from "@/helper/group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-import { AlertCircle, CalendarIcon } from "lucide-react";
+import { AlertCircle, ArrowDown, ArrowUp, ArrowUpDown, CalendarIcon, Trash2, UserPen } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { Group } from "@prisma/client";
+import { Group, Recording } from "@prisma/client";
 // import { createPDF } from "./pdf";
 
 import { jsPDF } from "jspdf";
@@ -25,6 +25,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ComboBox, ComboType } from "@/components/ui/combo-box";
+import { ColumnDef } from "@tanstack/react-table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ErrorMessages = ({
   errors,
@@ -137,6 +139,7 @@ const createPDFWithImage = async () => {
 export default function Edit({ params }: { params: { id: number } }) {
   const [state, formAction] = useFormState(editGroup, { error: [] });
   const [oldData, setOldData] = useState<Group | null>();
+  const [dataDetail, setDataDetail] = useState<Recording[]>([]);
   const [selectCompany, setSelectCompany] = useState<ComboType[]>([]);
   const [selectDepartment, setSelectDepartment] = useState<ComboType[]>([]);
   const [value, setValue] = useState("");
@@ -158,13 +161,178 @@ export default function Edit({ params }: { params: { id: number } }) {
     getData();
   }, []);
 
+  const deleteData = (id: number) => {
+    fetch(`/api/monitoring`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to delete menu");
+        }
+        return response.json();
+      })
+      .then(() => {
+        setDataDetail((prevData) => prevData.filter((rec) => rec.id !== id));
+      })
+      .catch((error) => {
+        alert("Failed to delete menu. Please try again.");
+      });
+  };
+
+  const columns: ColumnDef<Recording>[] = [
+    {
+      id: "no",
+      accessorKey: "no",
+      size: 1,
+      header: "No",
+      cell: ({ row }) => {
+        return <div className="text-center">{row.index + 1}</div>;
+      },
+    },
+    {
+      accessorKey: "transcode",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Monitoring Code
+            {!column.getIsSorted() ? (
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "transdate",
+      size: 10,
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Monitoring Date
+            {!column.getIsSorted() ? (
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "company.name",
+      size: 2,
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Company
+            {!column.getIsSorted() ? (
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "department.name",
+      size: 2,
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Department
+            {!column.getIsSorted() ? (
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "pic",
+      size: 2,
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Staff Prakerin
+            {!column.getIsSorted() ? (
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      id: "actions",
+      size: 10,
+      header: (<div className="text-center">Actions</div>) as unknown as string,
+      cell: ({ row }) => {
+        const data = row.original;
+
+        return (
+          <div className="flex flex-row justify-center gap-2">
+            <a href={pathname + `/${data.id}`}>
+              <Button variant={"outline"} className="text-orange-500">
+                <UserPen />
+              </Button>
+            </a>
+            <Button
+              variant={"outline"}
+              className="text-red-600"
+              onClick={() => deleteData(data.id)}
+            >
+              <Trash2 />
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
     <>
       <div className="flex flex-col px-16 py-12 w-full h-full min-h-screen gap-4">
         <img id="myImage" src="/kop_recording.png" alt="Image to be added to PDF" style={{ display: 'none' }} />
         <Card className="rounded-md">
           <CardHeader className="flex-row space-y-0 py-3 px-6 justify-between items-center">
-            <p className="font-semibold">Edit Monitoring</p>
+            <p className="font-semibold">Edit Kunjungan</p>
             <div className="flex flex-row gap-2">
               <Button variant={"outline"} className="text-red-600">
                 <a href={pathname.replace(/\/\d+/, "")}>Back</a>
@@ -287,6 +455,63 @@ export default function Edit({ params }: { params: { id: number } }) {
             </form>
           </CardHeader>
         </Card>
+        <Tabs defaultValue="monitoring" className="w-full">
+          <Card>
+            <CardHeader>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="monitoring">Rekap Monitoring</TabsTrigger>
+                <TabsTrigger value="problem">Rekap masalah</TabsTrigger>
+              </TabsList>
+            </CardHeader>
+            <CardContent>
+              <TabsContent value="monitoring">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Rekap Monitoring</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-col space-y-2">
+                    <div className="flex flex-row items-end gap-4">
+                      <div className="space-y-1 w-1/4">
+                        <Label htmlFor="nis">NIS</Label>
+                        <Input id="nis" name="nis" placeholder="Enter NIS here." />
+                      </div>
+                      <div className="space-y-1 w-1/4">
+                        <Label htmlFor="nama">Nama</Label>
+                        <Input id="nama" name="nama" placeholder="Enter name here." />
+                      </div>
+                      <Button>Save changes</Button>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+              <TabsContent value="password">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Password</CardTitle>
+                    <CardDescription>
+                      Change your password here. After saving, you'll be logged out.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="current">Current password</Label>
+                      <Input id="current" type="password" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="new">New password</Label>
+                      <Input id="new" type="password" />
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button>Save password</Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+            </CardContent>
+          </Card>
+        </Tabs>
       </div>
     </>
   );

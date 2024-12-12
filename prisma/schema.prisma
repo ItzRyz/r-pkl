@@ -26,7 +26,7 @@ model User {
 
   accounts  Account[]
   sessions  Session[]
-  Recording Recording[]
+  Kunjungan Kunjungan[]
 
   group Group? @relation(fields: [groupid], references: [id], onDelete: Cascade)
 
@@ -142,7 +142,7 @@ model Department {
 
   createdat DateTime?   @default(now())
   updatedat DateTime?   @updatedAt
-  Recording Recording[]
+  kunjungan Kunjungan[]
 
   @@map("msdepartment")
 }
@@ -156,13 +156,13 @@ model Company {
   createdat DateTime? @default(now())
   updatedat DateTime? @updatedAt
 
-  Department Department[]
-  Recording  Recording[]
+  department Department[]
+  kunjungan  Kunjungan[]
 
   @@map("mscompany")
 }
 
-model Recording {
+model Kunjungan {
   id Int @id @default(autoincrement())
 
   transcode    String
@@ -176,46 +176,48 @@ model Recording {
   company    Company?    @relation(fields: [companyid], references: [id], onDelete: Cascade)
   department Department? @relation(fields: [departmentid], references: [id], onDelete: Cascade)
 
-  createdat        DateTime?          @default(now())
-  updatedat        DateTime?          @updatedAt
-  RecordingDetail  RecordingDetail[]
-  RecordingProblem RecordingProblem[]
+  createdat DateTime? @default(now())
+  updatedat DateTime? @updatedAt
 
-  @@map("trrecordinghd")
+  monitoring Monitoring[]
+  problem    Problem[]
+
+  @@map("trkunjungan")
 }
 
-model RecordingDetail {
+model Monitoring {
   id Int @id @default(autoincrement())
 
-  headerid   Int
-  nama       String
-  jurnal     Boolean
-  apd        Boolean
-  rambut     Boolean
-  penampilan Boolean
-  kinerja    Boolean
-  lksp       Boolean
-  alpha      Int
+  kunjunganid Int
+  nis         String
+  nama        String
+  jurnal      Boolean
+  apd         Boolean
+  rambut      Boolean
+  penampilan  Boolean
+  kinerja     Boolean
+  lksp        Boolean
+  alpha       Int
 
   createdat DateTime? @default(now())
   updatedat DateTime? @updatedAt
 
-  header Recording @relation(fields: [headerid], references: [id], onDelete: Cascade)
+  kunjungan Kunjungan @relation(fields: [kunjunganid], references: [id], onDelete: Cascade)
 
-  @@map("trrecordingdt")
+  @@map("trmonitoring")
 }
 
-model RecordingProblem {
+model Problem {
   id Int @id @default(autoincrement())
 
-  headerid     Int
+  kunjunganid  Int
   evaluasi     String
   penyelesaian String
 
   createdat DateTime? @default(now())
   updatedat DateTime? @updatedAt
 
-  header Recording @relation(fields: [headerid], references: [id], onDelete: Cascade)
+  kunjungan Kunjungan @relation(fields: [kunjunganid], references: [id], onDelete: Cascade)
 
-  @@map("trrecordingproblem")
+  @@map("trproblem")
 }
