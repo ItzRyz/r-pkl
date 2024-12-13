@@ -108,6 +108,36 @@ const convertImageToBase64 = async (
   });
 };
 
+const convertSvgToBase64 = (svgContent: BlobPart) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const svgBlob = new Blob([svgContent], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        const pngBase64 = canvas.toDataURL("image/png");
+        resolve(pngBase64);
+      } else {
+        reject(new Error("Canvas context not available"));
+      }
+      URL.revokeObjectURL(url);
+    };
+
+    img.onerror = (e) => {
+      reject(new Error("Error loading SVG"));
+      URL.revokeObjectURL(url);
+    };
+
+    img.src = url;
+  });
+};
+
 const createPDFWithImage = async () => {
   const doc = new jsPDF();
   try {
@@ -123,20 +153,27 @@ const createPDFWithImage = async () => {
 
     const uncheckIconSvg =
       '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>';
-    const uncheckIconBase64 = `data:image/svg+xml;base64,${btoa(
-      uncheckIconSvg
-    )}`;
-    console.log(uncheckIconBase64);
+    const uncheckIconBase64 = await convertSvgToBase64(uncheckIconSvg);
 
     // Add the Base64 image to the PDF
     doc.addImage(base64Image, "PNG", 10, 5, 190, 25);
 
     // Add subtitle, Division, Date, etc.
     doc.setFontSize(12);
-    doc.text("Di PT. Hyperdata Solusindo Mandiri", 105, 45, {
+    doc.setFont("helvetica", "bold");
+    doc.text("RECORDING KUNJUNGAN SISWA PRAKERIN", 100, 40, {
       align: "center",
     });
+    doc.setFont("helvetica", "none");
+    doc.text("Di", 65, 45, {
+      align: "left",
+    });
+    doc.setFont("helvetica", "bold");
+    doc.text("PT. Hyperdata Solusindo Mandiri", 70, 45, {
+      align: "left",
+    });
 
+    doc.setFont("helvetica", "none");
     // Add Division and Date
     doc.setFontSize(10);
     doc.text("TIK DIVISION", 15, 60);
@@ -164,24 +201,41 @@ const createPDFWithImage = async () => {
       body: [
         [
           "22540",
-          "Muhammad Salman Al Farizi",
-          { content: "", styles: { halign: "center" } },
+          "Salman\nAl Farizi",
+          { content: "\n\n", styles: { halign: "center" } },
           "1",
           "",
         ],
       ],
       didDrawCell: (data) => {
         if (data.column.index === 2 && data.row.index === 0) {
-          // Draw the icon in the "Checklist Monitoring" cell
-          const imgX = data.cell.x + data.cell.width / 2 - 6; // Center the image
-          const imgY = data.cell.y + 2; // Slightly offset vertically
-          doc.addImage(uncheckIconBase64, "PNG", imgX, imgY, 12, 12);
+          let imgX = data.cell.x;
+          let imgY = data.cell.y + 2;
+          // Correctly add the PNG Base64 image
+          if (data.section === 'body') {
+            // Line 1
+            doc.addImage(uncheckIconBase64 as string, "PNG", imgX, imgY, 4, 4);
+            doc.text("Jurnal", imgX + 5, imgY + 3);
+            doc.addImage(uncheckIconBase64 as string, "PNG", imgX + 20, imgY, 4, 4);
+            doc.text("APD", imgX + 25, imgY + 3);
+            doc.addImage(uncheckIconBase64 as string, "PNG", imgX + 40, imgY, 4, 4);
+            doc.text("Rambut", imgX + 45, imgY + 3);
+
+            // Line 2
+            imgY += 5;
+            doc.addImage(uncheckIconBase64 as string, "PNG", imgX, imgY, 4, 4);
+            doc.text("Jurnal", imgX + 5, imgY + 3);
+            doc.addImage(uncheckIconBase64 as string, "PNG", imgX + 20, imgY, 4, 4);
+            doc.text("APD", imgX + 25, imgY + 3);
+            doc.addImage(uncheckIconBase64 as string, "PNG", imgX + 40, imgY, 4, 4);
+            doc.text("Rambut", imgX + 45, imgY + 3);
+          }
         }
       },
     });
 
     // Add signature area
-    doc.text("Diketahui Oleh :", 30, (doc as any).lastAutoTable.finalY + 20);
+    doc.text("Diketahui Oleh,", 20, (doc as any).lastAutoTable.finalY + 20);
     doc.text(
       "_________________________",
       20,
@@ -604,8 +658,8 @@ export default function Edit({ params }: { params: { id: number } }) {
                         >
                           {valueDep
                             ? selectDepartment.find(
-                                (dep) => dep.value === valueDep
-                              )?.label
+                              (dep) => dep.value === valueDep
+                            )?.label
                             : "Select department..."}
                           <ChevronsUpDown className="opacity-50" />
                         </Button>
