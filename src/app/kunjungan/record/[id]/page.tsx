@@ -9,24 +9,58 @@ import { editGroup } from "@/helper/group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-import { AlertCircle, ArrowDown, ArrowUp, ArrowUpDown, CalendarIcon, Trash2, UserPen } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  CalendarIcon,
+  Check,
+  CheckCheckIcon,
+  ChevronsUpDown,
+  Trash2,
+  UserPen,
+} from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { Group, Recording } from "@prisma/client";
+import { Group, Kunjungan, Monitoring } from "@prisma/client";
 // import { createPDF } from "./pdf";
 
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ComboBox, ComboType } from "@/components/ui/combo-box";
 import { ColumnDef } from "@tanstack/react-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DataTable } from "../data-table";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+
+import AutoTable from "jspdf-autotable";
 
 const ErrorMessages = ({
   errors,
@@ -59,14 +93,18 @@ const SuccessMessage = ({ message }: { message: string | undefined }) => {
   ) : null;
 };
 
-const convertImageToBase64 = async (imgElement: HTMLImageElement): Promise<string> => {
+const convertImageToBase64 = async (
+  imgElement: HTMLImageElement
+): Promise<string> => {
   return new Promise((resolve, reject) => {
-    html2canvas(imgElement, { useCORS: true }).then(canvas => {
-      const dataUrl = canvas.toDataURL("image/png");
-      resolve(dataUrl);
-    }).catch(error => {
-      reject(error);
-    });
+    html2canvas(imgElement, { useCORS: true })
+      .then((canvas) => {
+        const dataUrl = canvas.toDataURL("image/png");
+        resolve(dataUrl);
+      })
+      .catch((error) => {
+        reject(error);
+      });
   });
 };
 
@@ -83,47 +121,83 @@ const createPDFWithImage = async () => {
     // Convert the image to Base64 using html2canvas
     const base64Image = await convertImageToBase64(imgElement);
 
+    const uncheckIconSvg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>';
+    const uncheckIconBase64 = `data:image/svg+xml;base64,${btoa(
+      uncheckIconSvg
+    )}`;
+    console.log(uncheckIconBase64);
+
     // Add the Base64 image to the PDF
-    doc.addImage(base64Image, "PNG", 10, 10, 190, 40);
+    doc.addImage(base64Image, "PNG", 10, 5, 190, 25);
 
     // Add subtitle, Division, Date, etc.
     doc.setFontSize(12);
-    doc.text("Di ____________________", 105, 25, { align: "center" });
+    doc.text("Di PT. Hyperdata Solusindo Mandiri", 105, 45, {
+      align: "center",
+    });
 
     // Add Division and Date
     doc.setFontSize(10);
-    doc.text("..... DIVISION", 15, 40);
-    doc.text("Hari/Tanggal/Bulan/Tahun : ____________________", 15, 47);
+    doc.text("TIK DIVISION", 15, 60);
+    doc.text("Hari/Tanggal/Bulan/Tahun : 5 Desember 2024", 15, 65);
 
     // Add Rekap Permasalahan table
     doc.setFontSize(10);
-    doc.text("1. Rekap Permasalahan", 15, 60);
-    doc.rect(15, 65, 180, 20); // Table outline
-    doc.text("No", 17, 70);
-    doc.text("Evaluasi Hasil Kunjungan", 40, 70);
-    doc.text("Penyelesaian", 140, 70);
-    doc.line(35, 65, 35, 85); // Column line
-    doc.line(135, 65, 135, 85); // Column line
+    doc.text("1. Rekap Permasalahan", 15, 72);
+    AutoTable(doc, {
+      startY: 77,
+      head: [["No", "Evaluasi Hasil Kunjungan", "Penyelesaian"]],
+      body: [["", "", ""]],
+    });
 
     // Add Rekap Monitoring table
-    doc.text("2. Rekap monitoring siswa prakerin", 15, 100);
-    doc.rect(15, 105, 180, 60); // Table outline
-    doc.text("NIS", 17, 110);
-    doc.text("NAMA", 35, 110);
-    doc.text("CHECKLIST MONITORING", 70, 110);
-    doc.text("ALPHA", 140, 110);
-    doc.text("TTD SISWA", 160, 110);
-    doc.line(30, 105, 30, 165); // Column line
-    doc.line(65, 105, 65, 165); // Column line
-    doc.line(135, 105, 135, 165); // Column line
-    doc.line(155, 105, 155, 165); // Column line
+    doc.text(
+      "2. Rekap monitoring siswa prakerin",
+      15,
+      (doc as any).lastAutoTable.finalY + 5
+    );
+
+    AutoTable(doc, {
+      startY: (doc as any).lastAutoTable.finalY + 10,
+      head: [["NIS", "Nama", "Checklist Monitoring", "Alpha", "TTD Siswa"]],
+      body: [
+        [
+          "22540",
+          "Muhammad Salman Al Farizi",
+          { content: "", styles: { halign: "center" } },
+          "1",
+          "",
+        ],
+      ],
+      didDrawCell: (data) => {
+        if (data.column.index === 2 && data.row.index === 0) {
+          // Draw the icon in the "Checklist Monitoring" cell
+          const imgX = data.cell.x + data.cell.width / 2 - 6; // Center the image
+          const imgY = data.cell.y + 2; // Slightly offset vertically
+          doc.addImage(uncheckIconBase64, "PNG", imgX, imgY, 12, 12);
+        }
+      },
+    });
 
     // Add signature area
-    doc.text("Diketahui Oleh :", 15, 180);
-    doc.text("_________________________", 20, 190);
-    doc.text("Perusahaan", 25, 195);
-    doc.text("_________________________", 140, 190);
-    doc.text("Staff Prakerin / Pembimbing Sekolah", 145, 195);
+    doc.text("Diketahui Oleh :", 30, (doc as any).lastAutoTable.finalY + 20);
+    doc.text(
+      "_________________________",
+      20,
+      (doc as any).lastAutoTable.finalY + 40
+    );
+    doc.text("Perusahaan", 20, (doc as any).lastAutoTable.finalY + 45);
+    doc.text(
+      "_________________________",
+      140,
+      (doc as any).lastAutoTable.finalY + 40
+    );
+    doc.text(
+      "Staff Prakerin / Pembimbing Sekolah",
+      135,
+      (doc as any).lastAutoTable.finalY + 20
+    );
 
     // Save the PDF
     doc.setDocumentProperties({
@@ -139,12 +213,14 @@ const createPDFWithImage = async () => {
 export default function Edit({ params }: { params: { id: number } }) {
   const [state, formAction] = useFormState(editGroup, { error: [] });
   const [oldData, setOldData] = useState<Group | null>();
-  const [dataDetail, setDataDetail] = useState<Recording[]>([]);
+  const [dataMonitoring, setDataMonitoring] = useState<Monitoring[]>([]);
   const [selectCompany, setSelectCompany] = useState<ComboType[]>([]);
   const [selectDepartment, setSelectDepartment] = useState<ComboType[]>([]);
-  const [value, setValue] = useState("");
-  const [open, setOpen] = useState(false);
-  const [date, setDate] = useState<Date>()
+  const [valueComp, setValueComp] = useState("");
+  const [valueDep, setValueDep] = useState("");
+  const [openDep, setOpenDep] = useState(false);
+  const [openComp, setOpenComp] = useState(false);
+  const [date, setDate] = useState<Date>();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -157,6 +233,35 @@ export default function Edit({ params }: { params: { id: number } }) {
       const req = await fetch("/api/monitoring/" + params.id);
       const res = req.status == 200 && (await req.json());
       setOldData(res.data as Group);
+      setSelectCompany([
+        {
+          value: "1",
+          label: "PT. Hyperdata Solusindo Mandiri",
+        },
+      ]);
+      setSelectDepartment([
+        {
+          value: "1",
+          label: "TIK",
+        },
+      ]);
+      setDataMonitoring([
+        {
+          id: 1,
+          createdat: new Date(),
+          updatedat: new Date(),
+          kunjunganid: 1,
+          nis: "22540",
+          nama: "Muhammad Salman Al Farizi",
+          jurnal: true,
+          apd: true,
+          rambut: true,
+          penampilan: true,
+          kinerja: true,
+          lksp: true,
+          alpha: 0,
+        } satisfies Monitoring,
+      ]);
     };
     getData();
   }, []);
@@ -185,7 +290,7 @@ export default function Edit({ params }: { params: { id: number } }) {
       });
   };
 
-  const columns: ColumnDef<Recording>[] = [
+  const columns: ColumnDef<Monitoring>[] = [
     {
       id: "no",
       accessorKey: "no",
@@ -196,14 +301,14 @@ export default function Edit({ params }: { params: { id: number } }) {
       },
     },
     {
-      accessorKey: "transcode",
+      accessorKey: "nis",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Monitoring Code
+            NIS
             {!column.getIsSorted() ? (
               <ArrowUpDown className="ml-2 h-4 w-4" />
             ) : column.getIsSorted() === "asc" ? (
@@ -216,78 +321,121 @@ export default function Edit({ params }: { params: { id: number } }) {
       },
     },
     {
-      accessorKey: "transdate",
+      accessorKey: "nama",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Nama
+            {!column.getIsSorted() ? (
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "asc" ? (
+              <ArrowUp className="ml-2 h-4 w-4" />
+            ) : (
+              <ArrowDown className="ml-2 h-4 w-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "jurnal",
       size: 10,
-      header: ({ column }) => {
+      header: (<div className="text-center">Jurnal</div>) as unknown as string,
+      cell: ({ row }) => {
+        const data = row.original;
+
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Monitoring Date
-            {!column.getIsSorted() ? (
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === "asc" ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            )}
-          </Button>
+          <div className="flex flex-row justify-center">
+            <Checkbox checked={data.jurnal} />
+          </div>
         );
       },
     },
     {
-      accessorKey: "company.name",
+      accessorKey: "apd",
       size: 2,
-      header: ({ column }) => {
+      header: (<div className="text-center">APD</div>) as unknown as string,
+      cell: ({ row }) => {
+        const data = row.original;
+
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Company
-            {!column.getIsSorted() ? (
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === "asc" ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            )}
-          </Button>
+          <div className="flex flex-row justify-center">
+            <Checkbox checked={data.apd} />
+          </div>
         );
       },
     },
     {
-      accessorKey: "department.name",
+      accessorKey: "rambut",
       size: 2,
-      header: ({ column }) => {
+      header: (<div className="text-center">Rambut</div>) as unknown as string,
+      cell: ({ row }) => {
+        const data = row.original;
+
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Department
-            {!column.getIsSorted() ? (
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === "asc" ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            )}
-          </Button>
+          <div className="flex flex-row justify-center">
+            <Checkbox checked={data.rambut} />
+          </div>
         );
       },
     },
     {
-      accessorKey: "pic",
+      accessorKey: "lksp",
       size: 2,
+      header: (<div className="text-center">LKSP</div>) as unknown as string,
+      cell: ({ row }) => {
+        const data = row.original;
+
+        return (
+          <div className="flex flex-row justify-center">
+            <Checkbox checked={data.lksp} />
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "kinerja",
+      size: 2,
+      header: (<div className="text-center">Kinerja</div>) as unknown as string,
+      cell: ({ row }) => {
+        const data = row.original;
+
+        return (
+          <div className="flex flex-row justify-center">
+            <Checkbox checked={data.kinerja} />
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "penampilan",
+      size: 2,
+      header: (
+        <div className="text-center">Penampilan</div>
+      ) as unknown as string,
+      cell: ({ row }) => {
+        const data = row.original;
+
+        return (
+          <div className="flex flex-row justify-center">
+            <Checkbox checked={data.penampilan} />
+          </div>
+        );
+      },
+    },
+    {
+      id: "alpha",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="w-full "
           >
-            Staff Prakerin
+            Alpha
             {!column.getIsSorted() ? (
               <ArrowUpDown className="ml-2 h-4 w-4" />
             ) : column.getIsSorted() === "asc" ? (
@@ -298,6 +446,16 @@ export default function Edit({ params }: { params: { id: number } }) {
           </Button>
         );
       },
+      cell: ({ row }) => {
+        const data = row.original;
+
+        return <div className="flex flex-row justify-center">{data.alpha}</div>;
+      },
+    },
+    {
+      id: "ttd",
+      header: (<div className="text-center">TTD</div>) as unknown as string,
+      cell: "",
     },
     {
       id: "actions",
@@ -329,7 +487,12 @@ export default function Edit({ params }: { params: { id: number } }) {
   return (
     <>
       <div className="flex flex-col px-16 py-12 w-full h-full min-h-screen gap-4">
-        <img id="myImage" src="/kop_recording.png" alt="Image to be added to PDF" style={{ display: 'none' }} />
+        <img
+          id="myImage"
+          src="/kop_recording.png"
+          alt="Image to be added to PDF"
+          style={{ display: "unset" }}
+        />
         <Card className="rounded-md">
           <CardHeader className="flex-row space-y-0 py-3 px-6 justify-between items-center">
             <p className="font-semibold">Edit Kunjungan</p>
@@ -337,7 +500,11 @@ export default function Edit({ params }: { params: { id: number } }) {
               <Button variant={"outline"} className="text-red-600">
                 <a href={pathname.replace(/\/\d+/, "")}>Back</a>
               </Button>
-              <Button variant={"outline"} className="text-amber-500" onClick={createPDFWithImage}>
+              <Button
+                variant={"outline"}
+                className="text-amber-500"
+                onClick={createPDFWithImage}
+              >
                 Print
               </Button>
               <Button
@@ -388,7 +555,11 @@ export default function Edit({ params }: { params: { id: number } }) {
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {date ? format(date, "PPP") : <span>Pick a date</span>}
+                          {date ? (
+                            format(date, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-full p-0">
@@ -409,34 +580,79 @@ export default function Edit({ params }: { params: { id: number } }) {
                       data={selectCompany}
                       placeholder="Select company"
                       searchText="Search company"
-                      value={value}
-                      setValue={setValue}
-                      open={open}
-                      setOpen={setOpen}
+                      value={valueComp}
+                      setValue={setValueComp}
+                      open={openComp}
+                      setOpen={setOpenComp}
                     />
                     <Input
                       name="companyid"
                       id="companyid"
                       type="hidden"
-                      value={value}
+                      value={valueComp}
                     />
                   </div>
                   <div className="flex flex-col w-full space-y-1.5">
                     <Label htmlFor="department">Department</Label>
-                    <ComboBox
-                      data={selectDepartment}
-                      placeholder="Select department"
-                      searchText="Search department"
-                      value={value}
-                      setValue={setValue}
-                      open={open}
-                      setOpen={setOpen}
-                    />
+                    <Popover open={openDep} onOpenChange={setOpenDep}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openDep}
+                          className="w-full justify-between"
+                        >
+                          {valueDep
+                            ? selectDepartment.find(
+                                (dep) => dep.value === valueDep
+                              )?.label
+                            : "Select department..."}
+                          <ChevronsUpDown className="opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0">
+                        <Command>
+                          <CommandInput
+                            placeholder="Search department..."
+                            className="h-9"
+                          />
+                          <CommandList>
+                            <CommandEmpty>No department found.</CommandEmpty>
+                            <CommandGroup>
+                              {selectDepartment.map((dep) => (
+                                <CommandItem
+                                  key={dep.value}
+                                  value={dep.value}
+                                  onSelect={(currentValue) => {
+                                    setValueDep(
+                                      currentValue === valueDep
+                                        ? ""
+                                        : currentValue
+                                    );
+                                    setOpenDep(false);
+                                  }}
+                                >
+                                  {dep.label}
+                                  <Check
+                                    className={cn(
+                                      "ml-auto",
+                                      valueDep === dep.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <Input
                       name="departmentid"
                       id="departmentid"
                       type="hidden"
-                      value={value}
+                      value={valueDep}
                     />
                   </div>
                 </div>
@@ -469,21 +685,29 @@ export default function Edit({ params }: { params: { id: number } }) {
                   <CardHeader>
                     <CardTitle>Rekap Monitoring</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex flex-col space-y-2">
+                  <CardContent className="flex flex-col gap-4">
                     <div className="flex flex-row items-end gap-4">
                       <div className="space-y-1 w-1/4">
                         <Label htmlFor="nis">NIS</Label>
-                        <Input id="nis" name="nis" placeholder="Enter NIS here." />
+                        <Input
+                          id="nis"
+                          name="nis"
+                          placeholder="Enter NIS here."
+                        />
                       </div>
                       <div className="space-y-1 w-1/4">
                         <Label htmlFor="nama">Nama</Label>
-                        <Input id="nama" name="nama" placeholder="Enter name here." />
+                        <Input
+                          id="nama"
+                          name="nama"
+                          placeholder="Enter name here."
+                        />
                       </div>
                       <Button>Save changes</Button>
                     </div>
+                    <DataTable columns={columns} data={dataMonitoring} />
                   </CardContent>
-                  <CardFooter>
-                  </CardFooter>
+                  <CardFooter></CardFooter>
                 </Card>
               </TabsContent>
               <TabsContent value="password">
@@ -491,7 +715,8 @@ export default function Edit({ params }: { params: { id: number } }) {
                   <CardHeader>
                     <CardTitle>Password</CardTitle>
                     <CardDescription>
-                      Change your password here. After saving, you'll be logged out.
+                      Change your password here. After saving, you'll be logged
+                      out.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
