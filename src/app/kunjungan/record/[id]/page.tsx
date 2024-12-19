@@ -97,8 +97,10 @@ const convertImageToBase64 = async (
   imgElement: HTMLImageElement
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
+    document.body.appendChild(imgElement);
     html2canvas(imgElement, { useCORS: true })
       .then((canvas) => {
+        document.body.removeChild(imgElement);
         const dataUrl = canvas.toDataURL("image/png");
         resolve(dataUrl);
       })
@@ -142,7 +144,11 @@ const createPDFWithImage = async () => {
   const doc = new jsPDF();
   try {
     // Get the image element from the DOM
-    const imgElement = document.getElementById("myImage") as HTMLImageElement;
+    const imgElement = document.createElement("img");
+    imgElement.cloneNode(true);
+    imgElement.src = "/kop_recording.png";
+    imgElement.onload = () => console.log("Image loaded successfully");
+    imgElement.onerror = () => console.error("Failed to load image");
 
     if (!imgElement) {
       throw new Error("Image element not found");
@@ -160,20 +166,20 @@ const createPDFWithImage = async () => {
 
     // Add subtitle, Division, Date, etc.
     doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("Arial", "bold");
     doc.text("RECORDING KUNJUNGAN SISWA PRAKERIN", 100, 40, {
       align: "center",
     });
-    doc.setFont("helvetica", "none");
+    doc.setFont("Arial", "none");
     doc.text("Di", 65, 45, {
       align: "left",
     });
-    doc.setFont("helvetica", "bold");
+    doc.setFont("Arial", "bold");
     doc.text("PT. Hyperdata Solusindo Mandiri", 70, 45, {
       align: "left",
     });
 
-    doc.setFont("helvetica", "none");
+    doc.setFont("Arial", "none");
     // Add Division and Date
     doc.setFontSize(10);
     doc.text("TIK DIVISION", 15, 60);
@@ -212,22 +218,50 @@ const createPDFWithImage = async () => {
           let imgX = data.cell.x;
           let imgY = data.cell.y + 2;
           // Correctly add the PNG Base64 image
-          if (data.section === 'body') {
+          if (data.section === "body") {
             // Line 1
             doc.addImage(uncheckIconBase64 as string, "PNG", imgX, imgY, 4, 4);
             doc.text("Jurnal", imgX + 5, imgY + 3);
-            doc.addImage(uncheckIconBase64 as string, "PNG", imgX + 20, imgY, 4, 4);
+            doc.addImage(
+              uncheckIconBase64 as string,
+              "PNG",
+              imgX + 20,
+              imgY,
+              4,
+              4
+            );
             doc.text("APD", imgX + 25, imgY + 3);
-            doc.addImage(uncheckIconBase64 as string, "PNG", imgX + 40, imgY, 4, 4);
+            doc.addImage(
+              uncheckIconBase64 as string,
+              "PNG",
+              imgX + 40,
+              imgY,
+              4,
+              4
+            );
             doc.text("Rambut", imgX + 45, imgY + 3);
 
             // Line 2
             imgY += 5;
             doc.addImage(uncheckIconBase64 as string, "PNG", imgX, imgY, 4, 4);
             doc.text("Jurnal", imgX + 5, imgY + 3);
-            doc.addImage(uncheckIconBase64 as string, "PNG", imgX + 20, imgY, 4, 4);
+            doc.addImage(
+              uncheckIconBase64 as string,
+              "PNG",
+              imgX + 20,
+              imgY,
+              4,
+              4
+            );
             doc.text("APD", imgX + 25, imgY + 3);
-            doc.addImage(uncheckIconBase64 as string, "PNG", imgX + 40, imgY, 4, 4);
+            doc.addImage(
+              uncheckIconBase64 as string,
+              "PNG",
+              imgX + 40,
+              imgY,
+              4,
+              4
+            );
             doc.text("Rambut", imgX + 45, imgY + 3);
           }
         }
@@ -337,7 +371,9 @@ export default function Edit({ params }: { params: { id: number } }) {
         return response.json();
       })
       .then(() => {
-        setDataDetail((prevData) => prevData.filter((rec) => rec.id !== id));
+        setDataMonitoring((prevData) =>
+          prevData.filter((rec) => rec.id !== id)
+        );
       })
       .catch((error) => {
         alert("Failed to delete menu. Please try again.");
@@ -541,12 +577,6 @@ export default function Edit({ params }: { params: { id: number } }) {
   return (
     <>
       <div className="flex flex-col px-16 py-12 w-full h-full min-h-screen gap-4">
-        <img
-          id="myImage"
-          src="/kop_recording.png"
-          alt="Image to be added to PDF"
-          style={{ display: "unset" }}
-        />
         <Card className="rounded-md">
           <CardHeader className="flex-row space-y-0 py-3 px-6 justify-between items-center">
             <p className="font-semibold">Edit Kunjungan</p>
@@ -658,8 +688,8 @@ export default function Edit({ params }: { params: { id: number } }) {
                         >
                           {valueDep
                             ? selectDepartment.find(
-                              (dep) => dep.value === valueDep
-                            )?.label
+                                (dep) => dep.value === valueDep
+                              )?.label
                             : "Select department..."}
                           <ChevronsUpDown className="opacity-50" />
                         </Button>

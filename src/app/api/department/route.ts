@@ -1,28 +1,23 @@
-import { Menu } from "@prisma/client";
+import { Company, Department } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 async function POST(req: NextRequest) {
   try {
-    const { menunm, icon, seq, masterid, isactive, link }: Menu =
-      await req.json();
+    const { name, companyid }: Department = await req.json();
 
-    const newMenu = await prisma.menu.create({
+    const newDep = await prisma.department.create({
       data: {
-        menunm: menunm,
-        icon: icon,
-        seq: seq,
-        masterid: masterid,
-        isactive: isactive,
-        link: link,
+        name: name,
+        companyid: companyid,
       },
     });
 
-    if (!newMenu.id) {
+    if (!newDep.id) {
       return NextResponse.json(
         {
-          message: "Failed to create menu",
-          data: newMenu,
+          message: "Failed to create department",
+          data: newDep,
         },
         { status: 400 }
       );
@@ -30,8 +25,8 @@ async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: "Succcess create new menu",
-        data: newMenu,
+        message: "Succcess create new department",
+        data: newDep,
       },
       { status: 200 }
     );
@@ -48,13 +43,13 @@ async function POST(req: NextRequest) {
 
 async function GET() {
   try {
-    const menus = await prisma.menu.findMany();
+    const departments = await prisma.department.findMany();
 
-    if (menus.length < 1) {
+    if (departments.length < 1) {
       return NextResponse.json(
         {
-          message: "No menus found!",
-          data: menus,
+          message: "No departments found!",
+          data: departments,
         },
         { status: 400 }
       );
@@ -62,8 +57,8 @@ async function GET() {
 
     return NextResponse.json(
       {
-        message: "Menus found!",
-        data: menus,
+        message: "departments found!",
+        data: departments,
       },
       { status: 200 }
     );
@@ -80,17 +75,12 @@ async function GET() {
 
 async function PUT(req: NextRequest) {
   try {
-    const { id, menunm, icon, seq, masterid, isactive, link }: Menu =
-      await req.json();
+    const { id, name, companyid }: Department = await req.json();
 
-    const updateMenu = await prisma.menu.update({
+    const updateDepartment = await prisma.department.update({
       data: {
-        menunm: menunm,
-        icon: icon,
-        seq: seq,
-        masterid: masterid,
-        isactive: isactive,
-        link: link,
+        name: name,
+        companyid: companyid,
       },
       where: {
         id: Number.parseInt(id as unknown as string),
@@ -99,8 +89,8 @@ async function PUT(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: "Success update group",
-        data: updateMenu,
+        message: "Success update department",
+        data: updateDepartment,
       },
       { status: 200 }
     );
@@ -117,9 +107,9 @@ async function PUT(req: NextRequest) {
 
 async function DELETE(req: NextRequest) {
   try {
-    const { id }: Menu = await req.json();
+    const { id }: Department = await req.json();
 
-    await prisma.menu.delete({
+    await prisma.department.delete({
       where: {
         id: id,
       },
@@ -127,7 +117,7 @@ async function DELETE(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: "Success delete group",
+        message: "Success delete department",
       },
       { status: 200 }
     );

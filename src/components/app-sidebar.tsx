@@ -41,10 +41,10 @@ export function AppSidebar({ session }: { session: any }) {
       ],
     },
     {
-      title: "Monitoring",
+      title: "Kunjungan",
       items: [
-        { title: "Record", url: "/monitoring/record" },
-        { title: "Report", url: "/monitoring/report" },
+        { title: "Record", url: "/kunjungan/record" },
+        { title: "Report", url: "/kunjungan/report" },
       ],
     },
   ];
@@ -53,7 +53,7 @@ export function AppSidebar({ session }: { session: any }) {
     setOpenSubMenu(openSubMenu === title ? null : title);
   };
 
-  return path.includes("/login") ? (
+  return ["/login", "/logout"].includes(path) ? (
     <></>
   ) : (
     <Sidebar>
@@ -76,8 +76,9 @@ export function AppSidebar({ session }: { session: any }) {
                     >
                       <span>{item.title}</span>
                       <ChevronRight
-                        className={`transition-transform ${openSubMenu === item.title ? "rotate-90" : ""
-                          }`}
+                        className={`transition-transform ${
+                          openSubMenu === item.title ? "rotate-90" : ""
+                        }`}
                       />
                     </SidebarMenuButton>
                     {openSubMenu === item.title && (
@@ -119,15 +120,9 @@ export function AppSidebar({ session }: { session: any }) {
                 side="top"
                 className="w-[--radix-popper-anchor-width]"
               >
-                <DropdownMenuItem>
-                  <span>Account</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>Billing</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span onClick={() => signOut()}>Sign out</span>
-                </DropdownMenuItem>
+                <a href="/logout">
+                  <DropdownMenuItem>Sign out</DropdownMenuItem>
+                </a>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

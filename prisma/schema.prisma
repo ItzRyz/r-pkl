@@ -99,6 +99,7 @@ model Menu {
 
   menunm   String?
   icon     String?
+  link     String?
   seq      Int?
   masterid Int?
   isactive Boolean?

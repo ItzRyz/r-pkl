@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 import { ZodIssue } from "zod";
 
@@ -12,11 +12,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Check, ChevronsUpDown, Command } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
-import { Icon } from "@/components/ui/icon";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ComboType } from "@/components/ui/combo-box";
+import {
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
+import { Menu } from "@prisma/client";
 
 const ErrorMessages = ({
   errors,
@@ -52,14 +65,31 @@ const SuccessMessage = ({ message }: { message: string | undefined }) => {
 export default function Add() {
   const [state, formAction] = useFormState(addGroup, { error: [] });
   const [isMaster, setIsMaster] = useState(false);
-  const [value, setValue] = useState("");
-  const [open, setOpen] = useState(false);
+  const [selectMaster, setSelectMaster] = useState<ComboType[]>([]);
+  const [masterId, setMasterId] = useState("");
+  const [openMaster, setOpenMaster] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   if (state.status == 200) {
     router.push(pathname.replace(/\/add$/, ""));
   }
+
+  useEffect(() => {
+    const getSelectMaster = async () => {
+      const req = await fetch("/api/menu");
+      const res = await req.json();
+      var temp: Array<ComboType> = [];
+      res.data.map((a: Menu) => {
+        temp.push({
+          value: a.id.toString(),
+          label: a.menunm as string,
+        });
+      });
+      setSelectMaster(temp);
+    };
+    getSelectMaster();
+  }, []);
 
   return (
     <>
@@ -115,11 +145,66 @@ export default function Add() {
                     >
                       <Label htmlFor="masterid">Master</Label>
                       <div className="relative">
+                        <Popover open={openMaster} onOpenChange={setOpenMaster}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openMaster}
+                              className="w-full justify-between"
+                            >
+                              {masterId
+                                ? selectMaster.find((m) => m.value === masterId)
+                                    ?.label
+                                : "Select master menu..."}
+                              <ChevronsUpDown className="opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="p-0">
+                            <Command>
+                              <CommandInput
+                                placeholder="Search master menu..."
+                                className="h-9"
+                              />
+                              <CommandList>
+                                <CommandEmpty>
+                                  No master menu found.
+                                </CommandEmpty>
+                                <CommandGroup>
+                                  {selectMaster.map((m) => (
+                                    <CommandItem
+                                      key={m.value}
+                                      value={m.value}
+                                      onSelect={(currentValue) => {
+                                        setMasterId(
+                                          currentValue === masterId
+                                            ? ""
+                                            : currentValue
+                                        );
+                                        setOpenMaster(false);
+                                      }}
+                                    >
+                                      {m.label}
+                                      <Check
+                                        className={cn(
+                                          "ml-auto",
+                                          masterId === m.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <Input
-                          id="masterid"
                           name="masterid"
-                          type="text"
-                          placeholder="Your menu link here."
+                          id="masterid"
+                          type="hidden"
+                          value={masterId}
                         />
                       </div>
                     </div>
@@ -138,13 +223,13 @@ export default function Add() {
                 </div>
                 <div className="flex flex-row w-full gap-4">
                   <div className="flex flex-col w-full space-y-1.5">
-                    <Label htmlFor="link">Link</Label>
+                    <Label htmlFor="seq">Sequence</Label>
                     <div className="relative">
                       <Input
-                        id="link"
-                        name="link"
-                        type="text"
-                        placeholder="Your menu link here."
+                        id="seq"
+                        name="seq"
+                        type="number"
+                        placeholder="Your menu sequence here."
                       />
                     </div>
                   </div>
@@ -162,18 +247,7 @@ export default function Add() {
                 </div>
                 <div className="flex flex-row w-full gap-4">
                   <div className="flex flex-col w-full space-y-1.5">
-                    <Label htmlFor="seq">Sequence</Label>
-                    <div className="relative">
-                      <Input
-                        id="seq"
-                        name="seq"
-                        type="number"
-                        placeholder="Your menu sequence here."
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-col w-full space-y-1.5">
-                    <Label htmlFor="link">Sequence</Label>
+                    <Label htmlFor="link">Link</Label>
                     <div className="relative">
                       <Input
                         id="link"

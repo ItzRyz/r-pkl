@@ -1,28 +1,23 @@
-import { Menu } from "@prisma/client";
+import { Company, Group } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 async function POST(req: NextRequest) {
   try {
-    const { menunm, icon, seq, masterid, isactive, link }: Menu =
-      await req.json();
+    const { name, address }: Company = await req.json();
 
-    const newMenu = await prisma.menu.create({
+    const newComp = await prisma.company.create({
       data: {
-        menunm: menunm,
-        icon: icon,
-        seq: seq,
-        masterid: masterid,
-        isactive: isactive,
-        link: link,
+        name: name,
+        address: address,
       },
     });
 
-    if (!newMenu.id) {
+    if (!newComp.id) {
       return NextResponse.json(
         {
-          message: "Failed to create menu",
-          data: newMenu,
+          message: "Failed to create company",
+          data: newComp,
         },
         { status: 400 }
       );
@@ -30,8 +25,8 @@ async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: "Succcess create new menu",
-        data: newMenu,
+        message: "Succcess create new company",
+        data: newComp,
       },
       { status: 200 }
     );
@@ -48,13 +43,13 @@ async function POST(req: NextRequest) {
 
 async function GET() {
   try {
-    const menus = await prisma.menu.findMany();
+    const companies = await prisma.company.findMany();
 
-    if (menus.length < 1) {
+    if (companies.length < 1) {
       return NextResponse.json(
         {
-          message: "No menus found!",
-          data: menus,
+          message: "No companies found!",
+          data: companies,
         },
         { status: 400 }
       );
@@ -62,8 +57,8 @@ async function GET() {
 
     return NextResponse.json(
       {
-        message: "Menus found!",
-        data: menus,
+        message: "groups found!",
+        data: companies,
       },
       { status: 200 }
     );
@@ -80,17 +75,12 @@ async function GET() {
 
 async function PUT(req: NextRequest) {
   try {
-    const { id, menunm, icon, seq, masterid, isactive, link }: Menu =
-      await req.json();
+    const { id, name, address }: Company = await req.json();
 
-    const updateMenu = await prisma.menu.update({
+    const updateCompany = await prisma.company.update({
       data: {
-        menunm: menunm,
-        icon: icon,
-        seq: seq,
-        masterid: masterid,
-        isactive: isactive,
-        link: link,
+        name: name,
+        address: address,
       },
       where: {
         id: Number.parseInt(id as unknown as string),
@@ -99,8 +89,8 @@ async function PUT(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: "Success update group",
-        data: updateMenu,
+        message: "Success update company",
+        data: updateCompany,
       },
       { status: 200 }
     );
@@ -117,9 +107,9 @@ async function PUT(req: NextRequest) {
 
 async function DELETE(req: NextRequest) {
   try {
-    const { id }: Menu = await req.json();
+    const { id }: Company = await req.json();
 
-    await prisma.menu.delete({
+    await prisma.company.delete({
       where: {
         id: id,
       },
@@ -127,7 +117,7 @@ async function DELETE(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: "Success delete group",
+        message: "Success delete company",
       },
       { status: 200 }
     );
